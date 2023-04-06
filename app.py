@@ -1,11 +1,14 @@
-import json, config
-from flask import Flask, request, jsonify, render_template
+import config
+import json
+
 from binance.client import Client
 from binance.enums import *
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
 client = Client(config.API_KEY, config.API_SECRET, tld='us')
+
 
 def order(side, quantity, symbol, order_type=ORDER_TYPE_MARKET):
     try:
@@ -17,15 +20,17 @@ def order(side, quantity, symbol, order_type=ORDER_TYPE_MARKET):
 
     return order
 
+
 @app.route('/')
 def welcome():
     return render_template('index.html')
 
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    #print(request.data)
+    # print(request.data)
     data = json.loads(request.data)
-    
+
     if data['passphrase'] != config.WEBHOOK_PASSPHRASE:
         return {
             "code": "error",
