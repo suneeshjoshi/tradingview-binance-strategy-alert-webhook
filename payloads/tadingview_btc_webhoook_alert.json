@@ -1,0 +1,25 @@
+{
+    "passphrase": "Suneesh_Passphrase",
+    "time": "2023-04-06T02:01:10Z",
+    "exchange": "BINANCE",
+    "ticker": "BTCUSDT",
+    "bar": {
+        "time": "2023-04-06T02:00:00Z",
+        "open": 28072.68,
+        "high": 28080.54,
+        "low": 28065.95,
+        "close": 28079.31,
+        "volume": 0
+    },
+    "strategy": {
+        "position_size": 0,
+        "order_action": "sell",
+        "order_contracts": 1,
+        "order_price": 28079.31,
+        "order_id": "Sell",
+        "market_position": "flat",
+        "market_position_size": 0,
+        "prev_market_position": "long",
+        "prev_market_position_size": 1
+    }
+}
