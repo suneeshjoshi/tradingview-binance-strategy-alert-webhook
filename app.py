@@ -33,8 +33,15 @@ def get_version():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    tvsp = TradingViewSignalProcessor(client, request)
-    tvsp.process_signal()
+    trading_view_signal_processor = TradingViewSignalProcessor(client, request)
+    trading_view_signal_processor.process_signal()
+
+
+# Flask route to handle Tradingview webhook
+@app.route('/webhook_optimized', methods=['POST'])
+def webhook_optimized():
+    trading_view_signal_processor = TradingViewSignalProcessor(client, request)
+    trading_view_signal_processor.process_signal_optimized()
 
 
 if __name__ == '__main__':
