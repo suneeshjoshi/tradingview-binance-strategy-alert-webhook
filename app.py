@@ -34,14 +34,16 @@ def get_version():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     trading_view_signal_processor = TradingViewSignalProcessor(client, request)
-    trading_view_signal_processor.process_signal()
+    order_result = trading_view_signal_processor.process_signal()
+    return order_result
 
 
 # Flask route to handle Tradingview webhook
 @app.route('/webhook_optimized', methods=['POST'])
 def webhook_optimized():
     trading_view_signal_processor = TradingViewSignalProcessor(client, request)
-    trading_view_signal_processor.process_signal_optimized()
+    order_result = trading_view_signal_processor.process_signal_optimized()
+    return order_result
 
 
 if __name__ == '__main__':

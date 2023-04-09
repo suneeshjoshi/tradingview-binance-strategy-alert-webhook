@@ -1,3 +1,5 @@
+# To be deleted once Connection to Binance works
+
 # Binance Futures API key and secret
 api_key = 'your_api_key'
 api_secret = b'your_api_secret'

@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import logging
 import time
 
 import requests
@@ -48,6 +49,10 @@ class TradeEngine:
             params['type'] = 'TAKE_PROFIT_LIMIT'
             params['stopPrice'] = tp
             params['timeInForce'] = 'GTX'
+        if sl is not None:
+            # ADD Logic for Stop loss
+            logging.info("Add Stop Loss logic")
+
         endpoint = '/fapi/v1/order/test'
         query_string = '&'.join([f"{k}={v}" for k, v in params.items()])
         signature = hmac.new(config.API_KEY, query_string.encode('utf-8'), hashlib.sha256).hexdigest()

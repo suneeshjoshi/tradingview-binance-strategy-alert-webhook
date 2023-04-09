@@ -9,6 +9,8 @@ import config
 from config import RESPONSE, MESSAGE, STATUS, SUCCESS, FAIL
 from trade_engine.TradeEngine import TradeEngine
 
+STRATEGY = 'strategy'
+
 
 class TradingViewSignalProcessor:
     def __init__(self, client, input_request):
@@ -20,8 +22,9 @@ class TradingViewSignalProcessor:
         # print(request.data)
         data = json.loads(request.data)
 
-        if data['passphrase'] != config.WEBHOOK_PASSPHRASE:
-            return self.get_response(FAIL, "Error! Invalid passphrase")
+        verification_result = self.verify_webhook()
+        if verification_result.get(STATUS) != SUCCESS:
+            return verification_result
 
         side = data['strategy']['order_action'].upper()
         quantity = data['strategy']['order_contracts']
@@ -37,29 +40,45 @@ class TradingViewSignalProcessor:
 
     # Function to verify Tradingview webhook
     def verify_webhook(self):
-        signature = self.request.headers.get('X-Secret')
-        payload = self.request.data.decode('utf-8')
-        if signature == hmac.new(config.WEBHOOK_PASSPHRASE.encode('utf-8'), payload.encode('utf-8'),
-                                 hashlib.sha256).hexdigest():
-            return True
+        data = json.loads(request.data)
+        if config.ENABLE_TV_SIGNAL_SIGNATURE_CHECK:
+            signature = self.request.headers.get('X-Secret')
+            payload = data.decode('utf-8')
+            if signature == hmac.new(config.WEBHOOK_PASSPHRASE.encode('utf-8'), payload.encode('utf-8'),
+                                     hashlib.sha256).hexdigest():
+                return self.get_response(SUCCESS, "Webhook Signature Verification Passed.")
+            else:
+                return self.get_response(FAIL, "Error! Webhook Signature Verification Failed.")
         else:
-            return False
+            if data['passphrase'] != config.WEBHOOK_PASSPHRASE:
+                return self.get_response(FAIL, "Error! Webhook Passphrase Verification Failed. Invalid passphrase")
+            else:
+                return self.get_response(SUCCESS, "Webhook Passphrase Verification Passed.")
 
     def process_signal_optimized(self):
-        if self.verify_webhook():
-            data = request.get_json()
-            symbol = data['symbol']
-            side = data['side']
-            quantity = data['quantity']
-            price = data['price']
-            tp = data.get('tp', None)
-            sl = data.get('sl', None)
+        # Check if the verification passed or not
+        verification_status = self.verify_webhook()
+        if verification_status.get(STATUS) == SUCCESS:
+            data = json.loads(request.data)
+            strategy = data[STRATEGY]
+
+            symbol = data['ticker']
+            side = strategy['order_action'].upper()
+            quantity = strategy['order_contracts']
+            price = strategy['order_price']
+            # Original, re-enable these once TP & SL values are received from tradingview
+            # tp = data.get('tp', None)
+            # sl = data.get('sl', None)
+
+            tp = price + 10 if side == "BUY" else price - 10
+            sl = price - 10 if side == "BUY" else price + 10
+
             response = self.trading_engine.place_order_optimized(symbol, side, quantity, price, tp, sl)
             return self.get_response(SUCCESS, "Order Executed", response)
         else:
-            return self.get_response(FAIL, "Error! Webhook verification failed")
+            return verification_status
 
-    def get_response(status, message, order_response=""):
+    def get_response(self, status, message, order_response=""):
         return {
             STATUS: status,
             MESSAGE: message,
